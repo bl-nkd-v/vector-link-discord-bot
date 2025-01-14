@@ -2,6 +2,10 @@
 
 A simple Discord bot that listens for messages from Rick (a popular crypto metadata bot) and responds with formatted Vector.fun links. When Rick posts information about a token contract, this bot automatically generates a Vector.fun link for that same contract.
 
+## Add to your server
+
+If you want to add this bot to your server, you can do so by clicking [this link](https://discord.com/oauth2/authorize?client_id=1328776639370366996).
+
 ## Features
 
 - Automatically detects messages from Rick bot
