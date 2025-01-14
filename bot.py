@@ -118,8 +118,7 @@ async def on_message(message: discord.Message):
     )
     view.add_item(button)
 
-    # Reply with both link and button for debugging
-    await message.reply(f"Vector Link:", view=view)
+    await message.reply(view=view)
 
 
 def main():

@@ -1,41 +1,56 @@
 # Vector Link Discord Bot
 
-A simple Discord bot that listens for messages from the Rick and responds with formatted Vector.fun links. This bot helps bridge the gap by providing Vector.fun links for contract addresses that Rick bot identifies.
+A simple Discord bot that listens for messages from Rick (a popular crypto metadata bot) and responds with formatted Vector.fun links. When Rick posts information about a token contract, this bot automatically generates a Vector.fun link for that same contract.
 
 ## Features
 
 - Automatically detects messages from Rick bot
-- Parses contract addresses and chain information
+- Parses contract addresses and chain information from Rick's embeds
 - Generates Vector.fun links with referral code support
+- Supports multiple chains (Solana, Ethereum, Base, etc.)
 - Simple and maintainable codebase
+
+## Prerequisites
+
+- Python 3.8 or higher
+- A Discord bot token with MESSAGE_CONTENT intent enabled
+- A Vector.fun referral code (optional)
 
 ## Setup
 
-1. Clone this repository:
+1. Create a Discord Bot:
+
+   - Go to [Discord Developer Portal](https://discord.com/developers/applications)
+   - Create a new application
+   - Go to the Bot section
+   - Enable MESSAGE_CONTENT intent
+   - Copy the bot token
+
+2. Clone this repository:
 
 ```bash
 git clone https://github.com/bl-nkd-v/vector-link-discord-bot.git
 cd vector-link-discord-bot
 ```
 
-2. Install dependencies:
+3. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file:
+4. Create a `.env` file:
 
 ```bash
 cp .env.example .env
 ```
 
-4. Edit the `.env` file with your:
+5. Edit the `.env` file with your:
 
-   - Discord bot token (get it from [Discord Developer Portal](https://discord.com/developers/applications))
-   - Vector.fun referral code
+   - Discord bot token (from step 1)
+   - Vector.fun referral code (optional)
 
-5. Run the bot:
+6. Run the bot:
 
 ```bash
 python bot.py
@@ -45,11 +60,16 @@ python bot.py
 
 The bot uses environment variables for configuration:
 
-- `DISCORD_BOT_CLIENT_ID`: Your Discord bot client ID
-- `DISCORD_BOT_CLIENT_SECRET`: Your Discord bot client secret
-- `VECTOR_REF_CODE`: Your Vector.fun referral code
+- `DISCORD_BOT_TOKEN`: Your Discord bot token
+- `VECTOR_REF_CODE`: Your Vector.fun referral code (optional)
 
-You can get your Discord bot client ID and secret from the [Discord Developer Portal](https://discord.com/developers/applications). Your Discord bot must have the `MESSAGE_CONTENT` intent enabled.
+## Supported Chains
+
+The bot currently supports the following chains:
+
+- Solana (SOL)
+- Ethereum (ETH)
+- Base
 
 ## Contributing
 
