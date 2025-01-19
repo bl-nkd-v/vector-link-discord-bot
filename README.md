@@ -66,6 +66,7 @@ The bot uses environment variables for configuration:
 
 - `DISCORD_BOT_TOKEN`: Your Discord bot token
 - `VECTOR_REF_CODE`: Your Vector.fun referral code (optional)
+- `ENVIRONMENT`: The environment (development/production)
 
 ## Supported Chains
 

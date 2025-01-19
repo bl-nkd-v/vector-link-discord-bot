@@ -1,5 +1,6 @@
 import os
 import re
+import asyncio
 from typing import Optional, Tuple
 from enum import Enum
 import discord
@@ -12,6 +13,7 @@ load_dotenv()
 # Configure intents
 intents = discord.Intents.default()
 intents.message_content = True
+intents.reactions = True  # Need this for reaction handling
 
 # Initialize bot
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -19,6 +21,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Constants
 RICK_BOT_ID = 1081815963990761542
 VECTOR_BASE_URL = "https://vec.fun/token"
+TRASH_EMOJI = "🗑️"
+REACTION_TIMEOUT = 30  # seconds
 
 
 class ChainInfo(Enum):
@@ -91,8 +95,75 @@ async def on_ready():
     print(f"{bot.user} has connected to Discord!")
 
 
+async def remove_reaction_after_delay(message: discord.Message):
+    """Remove our trash reaction after the specified timeout."""
+    await asyncio.sleep(REACTION_TIMEOUT)
+    try:
+        # Try to fetch the message to see if it still exists
+        channel = message.channel
+        await channel.fetch_message(message.id)
+        # If message exists, remove our reaction
+        await message.remove_reaction(TRASH_EMOJI, bot.user)
+    except discord.NotFound:
+        # Message was deleted, nothing to do
+        return
+    except Exception as e:
+        print(f"Error removing reaction: {e}")
+
+
+@bot.event
+async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
+    """Handle reaction adds to manage message deletion."""
+    # Ignore our own reactions
+    if payload.user_id == bot.user.id:
+        return
+
+    # Only handle trash emoji reactions
+    if str(payload.emoji) != TRASH_EMOJI:
+        return
+
+    # Get the channel and message
+    channel = bot.get_channel(payload.channel_id)
+    if not channel:
+        return
+
+    try:
+        message = await channel.fetch_message(payload.message_id)
+        if not message:
+            return
+
+        # Check if this is our bot's message
+        if message.author != bot.user:
+            return
+
+        # Get the message that Rick replied to (the original message)
+        if not message.reference:
+            return
+
+        rick_message = await channel.fetch_message(message.reference.message_id)
+        if not rick_message:
+            return
+
+        # Check if the reaction was added by the original message author
+        original_message = await channel.fetch_message(
+            rick_message.reference.message_id
+        )
+        if not original_message or payload.user_id == original_message.author.id:
+            await message.delete()
+    except discord.NotFound:
+        pass  # Message was already deleted
+    except Exception as e:
+        print(f"Error handling reaction: {e}")
+
+
 @bot.event
 async def on_message(message: discord.Message):
+    # Check environment and guild ID
+    environment = os.getenv("ENVIRONMENT", "production")
+    development_guild_id = int(os.getenv("DEVELOPMENT_GUILD_ID", "0"))
+    if environment == "development" and message.guild.id != development_guild_id:
+        return
+
     # Only process messages from Rick bot
     if message.author.id != RICK_BOT_ID:
         return
@@ -118,7 +189,24 @@ async def on_message(message: discord.Message):
     )
     view.add_item(button)
 
-    await message.reply(view=view)
+    try:
+        # Send reply
+        bot_message = await message.reply(view=view)
+
+        try:
+            # Add reaction
+            await bot_message.add_reaction(TRASH_EMOJI)
+            # Start task to remove reaction after delay
+            asyncio.create_task(remove_reaction_after_delay(bot_message))
+        except discord.Forbidden as e:
+            print(f"Bot lacks permission to add reactions: {e}")
+        except discord.HTTPException as e:
+            print(f"Failed to add reaction: {e}")
+        except Exception as e:
+            print(f"Unexpected error adding reaction: {e}")
+
+    except Exception as e:
+        print(f"Failed to send message or add reaction: {e}")
 
 
 def main():
