@@ -12,7 +12,11 @@ If you want to add this bot to your server, you can do so by clicking [this link
 - Parses contract addresses and chain information from Rick's embeds
 - Generates Vector.fun links with referral code support
 - Supports multiple chains (Solana, Ethereum, Base, etc.)
-- Simple and maintainable codebase
+
+## TODO
+
+- [ ] Add support for pumpfun pre-migrations on Rick
+- [ ] Add support for wallet tracker bot webhooks
 
 ## Prerequisites
 
