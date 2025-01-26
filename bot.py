@@ -128,30 +128,44 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
         return
 
     try:
+        # Get our bot's message that was reacted to
         message = await channel.fetch_message(payload.message_id)
-        if not message:
+        if not message or message.author != bot.user:
             return
 
-        # Check if this is our bot's message
-        if message.author != bot.user:
-            return
-
-        # Get the message that Rick replied to (the original message)
+        # Check if this is a reply
         if not message.reference:
             return
 
-        rick_message = await channel.fetch_message(message.reference.message_id)
-        if not rick_message:
+        try:
+            # Try to get Rick's message
+            rick_message = await channel.fetch_message(message.reference.message_id)
+            if not rick_message or rick_message.author.id != RICK_BOT_ID:
+                await message.delete()
+                return
+        except discord.NotFound:
+            # Rick's message was deleted
+            await message.delete()
             return
 
-        # Check if the reaction was added by the original message author
-        original_message = await channel.fetch_message(
-            rick_message.reference.message_id
-        )
-        if not original_message or payload.user_id == original_message.author.id:
+        try:
+            # Try to get the original message Rick replied to
+            original_message = await channel.fetch_message(
+                rick_message.reference.message_id
+            )
+            if not original_message:
+                await message.delete()
+                return
+
+            # Check if the reaction was added by the original message author
+            if payload.user_id == original_message.author.id:
+                await message.delete()
+        except discord.NotFound:
+            # Original message was deleted
             await message.delete()
+
     except discord.NotFound:
-        pass  # Message was already deleted
+        pass  # Our message was already deleted
     except Exception as e:
         print(f"Error handling reaction: {e}")
 
